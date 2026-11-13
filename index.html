@@ -91,7 +91,7 @@ summary{cursor:pointer}.steps{display:grid;grid-template-columns:repeat(auto-fit
 <div class="card"><div class="v"><div><div class="dis">Practice account value</div><div class="vb" id="pv"></div><div id="pp"></div></div>
 <div class="grid" style="flex:1;min-width:240px"><div class="k"><span>Cash</span><b id="pcash"></b></div><div class="k"><span>In stocks</span><b id="pinv"></b></div><div class="k"><span>Realised P&amp;L</span><b id="prl"></b></div></div></div>
 <div class="row"><button class="g" id="prs">Reset account</button><span class="dis">Virtual money only. Saved on this device.</span></div></div>
-<div class="card"><h2 id="phd">Live chart</h2><div class="row" style="margin:0 0 8px"><select id="prg"><option value="1d">Today (5 min)</option><option value="5d">5 days (15 min)</option></select><span class="dis" id="pst"></span></div><canvas id="pch"></canvas>
+<div class="card"><h2 id="phd">Live chart</h2><div class="row" style="margin:0 0 8px"><select id="prg"><option value="1d">Today (5 min candles)</option><option value="5d">5 days (15 min candles)</option></select><span class="dis" id="pst"></span></div><canvas id="pch"></canvas>
 <div class="grid" style="margin-top:10px"><div><label for="pq">Quantity</label><input type="number" id="pq" value="10" min="1"></div><div><label for="psl">Stop-loss (optional)</label><input type="number" id="psl" step="any"></div><div><label for="ptp">Target (optional)</label><input type="number" id="ptp" step="any"></div></div>
 <div class="row"><button id="pb" style="background:var(--up)">Buy</button><button id="ps" style="background:var(--dn)">Sell</button><button class="g" id="gw2">Open in Groww</button></div>
 <p class="dis" id="pm"></p><p class="dis">Fills at the latest live price with no brokerage, taxes or slippage, so real results will differ. Stop-loss and target orders are checked every 30 seconds while this page is open.</p></div>
@@ -328,21 +328,29 @@ $('ppos').onclick=e=>{const s=e.target.dataset&&e.target.dataset.c;if(s&&PP.pos[
 $('pb').onclick=()=>trade('B');$('ps').onclick=()=>trade('S');$('prg').onchange=pchart;
 $('prs').onclick=()=>{if(confirm('Reset to ₹10,00,000 practice money? All positions and history will be erased.')){PP={cash:1e6,start:1e6,real:0,pos:{},hist:[]};psave();prender()}};
 async function pchart(){if(!QS||$('tabP').hidden)return;const rg=$('prg').value;try{const j=await(await fetch('/api/stock?symbol='+encodeURIComponent(QS)+'&intraday=1&r='+rg)).json();pdraw(j.rows,j.prev,rg);$('pst').textContent=j.rows&&j.rows.length?'Updated '+new Date().toLocaleTimeString()+' · refreshes every 30 seconds':''}catch(e){pdraw([],0,rg)}}
-function pdraw(rows,prev,rg){const[x,w,h]=setup($('pch'),260),mut=css('--mut'),bd=css('--bd');
-if(!rows||rows.length<2){x.fillStyle=mut;x.fillText('No intraday data yet (the market may be closed).',10,30);return}
-const pl=6,pr=58,pt=8,pb=20,c=rows.map(r=>r.c),base=prev||c[0];let lo=Math.min(...c,base),hi=Math.max(...c,base);const pd=(hi-lo)*.08||1;lo-=pd;hi+=pd;
-const X=i=>pl+i/(c.length-1)*(w-pl-pr),Y=v=>pt+(hi-v)/(hi-lo)*(h-pt-pb),col=c[c.length-1]>=base?css('--up'):css('--dn');
-x.strokeStyle=bd;x.fillStyle=mut;x.textAlign='left';for(let g=0;g<=4;g++){const v=lo+(hi-lo)*g/4,y=Y(v);x.beginPath();x.moveTo(pl,y);x.lineTo(w-pr,y);x.stroke();x.fillText(fmt(v),w-pr+4,y+4)}
+function pdraw(rows,prev,rg){const[x,w,h]=setup($('pch'),300),mut=css('--mut'),bd=css('--bd');
+rows=(rows||[]).filter(r=>r.c!=null).map(r=>({t:r.t,o:r.o??r.c,h:r.h??Math.max(r.o??r.c,r.c),l:r.l??Math.min(r.o??r.c,r.c),c:r.c}));
+if(rows.length<2){x.fillStyle=mut;x.fillText('No intraday data yet (the market may be closed).',10,30);return}
+const up=css('--up'),dn=css('--dn'),pl=6,pr=58,pt=8,pb=20,n=rows.length,base=prev||rows[0].o;
+let lo=Math.min(...rows.map(r=>r.l),base),hi=Math.max(...rows.map(r=>r.h),base);const pd=(hi-lo)*.08||1;lo-=pd;hi+=pd;
+const cw=(w-pl-pr)/n,X=i=>pl+(i+.5)*cw,Y=v=>pt+(hi-v)/(hi-lo)*(h-pt-pb),bw=Math.max(1,Math.min(14,cw*.7));
+x.strokeStyle=bd;x.fillStyle=mut;x.textAlign='left';x.lineWidth=1;for(let g=0;g<=4;g++){const v=lo+(hi-lo)*g/4,y=Y(v);x.beginPath();x.moveTo(pl,y);x.lineTo(w-pr,y);x.stroke();x.fillText(fmt(v),w-pr+4,y+4)}
 x.setLineDash([5,4]);x.strokeStyle=mut;x.beginPath();x.moveTo(pl,Y(base));x.lineTo(w-pr,Y(base));x.stroke();x.setLineDash([]);
-x.beginPath();c.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v)));x.strokeStyle=col;x.lineWidth=1.8;x.stroke();
-x.lineTo(X(c.length-1),h-pb);x.lineTo(X(0),h-pb);x.fillStyle=col+'22';x.fill();x.fillStyle=col;x.fillText(fmt(c[c.length-1]),w-pr+4,Y(c[c.length-1])+4);
-x.fillStyle=mut;x.textAlign='center';[0,Math.floor(c.length/2),c.length-1].forEach(i=>{const d=new Date(rows[i].t*1000);x.fillText(rg==='5d'?d.toLocaleDateString([],{day:'numeric',month:'short'}):d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),Math.min(Math.max(X(i),24),w-pr-20),h-5)})}
+rows.forEach((r,i)=>{const col=r.c>=r.o?up:dn;x.strokeStyle=x.fillStyle=col;x.lineWidth=1;x.beginPath();x.moveTo(X(i),Y(r.h));x.lineTo(X(i),Y(r.l));x.stroke();
+const t=Y(Math.max(r.o,r.c)),bt=Y(Math.min(r.o,r.c));x.fillRect(X(i)-bw/2,t,bw,Math.max(1,bt-t))});
+const last=rows[n-1].c,lc=last>=base?up:dn;x.fillStyle=lc;x.fillText(fmt(last),w-pr+4,Y(last)+4);
+x.fillStyle=mut;x.textAlign='center';[0,Math.floor(n/2),n-1].forEach(i=>{const d=new Date(rows[i].t*1000);x.fillText(rg==='5d'?d.toLocaleDateString([],{day:'numeric',month:'short'}):d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),Math.min(Math.max(X(i),24),w-pr-20),h-5)})}
 setInterval(ptick,30000);
 // ---- Groww hand-off (manual order only) ----
-function groww(){const s=QS||$('sym').value.trim().toUpperCase();if(!s)return;const b=s.replace(/\.(NS|BO)$/,''),e=+$('ce').value||0,
+async function groww(){const s=QS||$('sym').value.trim().toUpperCase();if(!s)return;const b=s.replace(/\.(NS|BO)$/,''),e=+$('ce').value||0,
 t=(NAME||b)+' ('+s+') | Buy '+e+' | Stop-loss '+$('cs').value+' | Target '+$('ct2').value+' | Qty '+(e?Math.floor((+$('ca').value||0)/e):0);
-try{navigator.clipboard.writeText(t)}catch(x){}window.open('https://groww.in/search?q='+encodeURIComponent(b),'_blank','noopener');
-const m='Order details copied. Groww opens in a new tab: place and confirm the order there yourself. StockLens never trades with your real account.';$('cw').textContent=m;pmsg(m)}
+try{navigator.clipboard.writeText(t)}catch(x){}
+const w=window.open('about:blank','_blank');
+let url=null;try{const r=await fetch('/api/groww?symbol='+encodeURIComponent(s));if(r.ok)url=(await r.json()).url}catch(x){}
+const go=url||'https://groww.in/search?q='+encodeURIComponent(b);
+if(w){w.location.href=go}else{location.href=go}
+const m=url?'Opening the '+(NAME||b)+' page on Groww. Tap Buy there, enter the quantity and confirm the order yourself (details copied). StockLens never trades with your real account.':'Could not find the exact Groww page, so Groww search opened instead. Order details copied. Place and confirm the order there yourself.';
+$('cw').textContent=m;pmsg(m)}
 $('gw1').onclick=groww;$('gw2').onclick=groww;
 const q0=new URLSearchParams(location.search).get('s');if(q0){$('sym').value=q0;fetchLive()}
 

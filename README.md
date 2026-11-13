@@ -2,7 +2,7 @@
 
 ## 1. Files to upload to GitHub (repository root)
 index.html, manifest.json, sw.js, icon-192.png, icon-512.png, README.md and the folder `api` containing
-`stock.js`, `auth.js`, `_auth.js`. (Vercel redeploys automatically after each commit.)
+`stock.js`, `auth.js`, `_auth.js`, `groww.js`. (Vercel redeploys automatically after each commit.)
 
 ## 2. Make it private (required)
 In Vercel: your project, Settings, Environment Variables. Add:
@@ -21,4 +21,4 @@ Open your link in Chrome (Android) and tap "Install app", or in Safari (iPhone) 
 
 ## Notes
 - Paper-trading data is stored in each person's own browser.
-- Groww: the "Open in Groww" button only copies your order details and opens Groww. You place orders yourself.
+- Groww: the "Open in Groww" button copies your order details and opens that stock's Groww page (tap Buy there). You place orders yourself.
