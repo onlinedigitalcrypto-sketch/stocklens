@@ -1,6 +1,7 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>StockLens: stock analysis in one click</title>
+<link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#2f5bea"><link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📈%3C/text%3E%3C/svg%3E">
 <style>
 
@@ -44,13 +45,19 @@ summary{cursor:pointer}.steps{display:grid;grid-template-columns:repeat(auto-fit
 #pick{width:100%;margin-top:8px;padding:11px;border-radius:10px;border:0;font-size:15px;background:#fff;color:#14181f}
 #sg{background:var(--card);color:var(--tx);border-radius:10px;margin-top:4px}#sg div{padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--bd);font-size:14px}
 #qs{position:sticky;top:0;z-index:5;margin-bottom:14px}#lg{width:48px;height:48px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--ac);overflow:hidden;flex:none}
+.hero{position:relative}.tools{display:flex;gap:6px;justify-content:flex-end;margin-bottom:8px}.tools button{background:rgba(255,255,255,.2);padding:6px 11px;border-radius:99px;font-size:13px}
+.tabs{background:var(--card);border-bottom:1px solid var(--bd)}.tabs .wrap{display:flex;gap:2px;padding:0 10px;overflow-x:auto}.tabs button{background:none;color:var(--mut);border-radius:0;padding:12px 14px;border-bottom:3px solid transparent;white-space:nowrap}.tabs button.on{color:var(--tx);border-bottom-color:var(--ac)}
+#lk{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}#lk[hidden]{display:none}#lk .card{max-width:380px;width:100%}
+#lkc{background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:10px;flex:1;min-width:0}
 </style></head><body>
-<header class="hero"><div class="wrap">
+<div id="lk"><div class="card"><h2>🔒 StockLens is private</h2><p class="dis" id="lkm">Checking access…</p><div class="row"><input type="password" id="lkc" placeholder="Access code" autocomplete="off"><button id="lkb">Unlock</button></div></div></div>
+<header class="hero"><div class="wrap"><div class="tools"><button id="ins" hidden>⬇ Install app</button><button id="thm" title="Light / dark">🌙</button><button id="sgo">Lock</button></div>
 <div class="brand">📈 StockLens<span>Technical chart + fundamentals + news, fetched live in one click</span></div>
 <div class="search"><input type="text" id="sym" placeholder="Search any company or symbol, e.g. TCS.NS" autocomplete="off" autocapitalize="characters"><button id="lv">Analyse</button></div>
 <select id="pick"></select><div id="sg"></div><p class="dis" id="st"></p>
 </div></header>
-<main>
+<nav class="tabs"><div class="wrap"><button id="tbA" class="on">📊 Analyse</button><button id="tbP">🎮 Paper trading</button><button id="tbM" hidden>🔑 Access</button></div></nav>
+<main><section id="tabA">
 <div class="card" id="welcome"><h2>How it works</h2>
 <div class="steps"><div class="k"><span>1. Type a symbol</span><b>TCS.NS</b></div><div class="k"><span>2. We fetch it live</span><b>2 years of prices, ratios, headlines</b></div><div class="k"><span>3. You get a verdict</span><b>Buy / Hold / Avoid + reasons</b></div></div>
 <p class="dis" style="margin:8px 0 0">An honest note: no tool can predict a stock with 90% certainty. StockLens shows what three kinds of evidence say today and how its own signals actually performed on this stock in the past, so you can judge the confidence yourself.</p></div>
@@ -59,7 +66,7 @@ summary{cursor:pointer}.steps{display:grid;grid-template-columns:repeat(auto-fit
 <div class="card" id="overall"></div>
 <div class="card" id="cal"><h2>💰 Investment calculator</h2><p class="dis" style="margin:0 0 8px">Prefilled from the trade plan. Edit any box to see your profit or loss.</p>
 <div class="grid"><div><label for="ca">Amount to invest</label><input type="number" id="ca" value="50000" min="0"></div><div><label for="ce">Buy price</label><input type="number" id="ce" step="any"></div><div><label for="cs">Stop-loss price</label><input type="number" id="cs" step="any"></div><div><label for="ct2">Target price</label><input type="number" id="ct2" step="any"></div><div><label for="cc">Total trading capital (optional)</label><input type="number" id="cc" min="0"></div></div>
-<div class="row"><button class="g" id="cp2">Use suggested plan</button><button class="g" id="cn">Buy now at live price</button></div><div class="grid" id="cr2" style="margin-top:10px"></div><p class="dis" id="cw"></p></div>
+<div class="row"><button class="g" id="cp2">Use suggested plan</button><button class="g" id="cn">Buy now at live price</button><button class="g" id="gw1">Open in Groww</button></div><div class="grid" id="cr2" style="margin-top:10px"></div><p class="dis" id="cw"></p></div>
 <div class="card" id="bt" hidden></div>
 <div id="tcards">
 <div class="card" id="verdict"></div>
@@ -79,6 +86,21 @@ summary{cursor:pointer}.steps{display:grid;grid-template-columns:repeat(auto-fit
 <h2 style="margin-top:16px">News headlines <span class="dis">(<a id="nl" href="https://news.google.com" target="_blank" rel="noopener">Google News</a>; filled automatically when live)</span></h2>
 <textarea id="nw" style="height:80px"></textarea></details>
 <p class="dis">Educational tool, not investment advice. Indicators use past prices and can be wrong. Check company news and your own risk limits, and consider a SEBI-registered advisor before investing.</p>
+</section>
+<section id="tabP" hidden>
+<div class="card"><div class="v"><div><div class="dis">Practice account value</div><div class="vb" id="pv"></div><div id="pp"></div></div>
+<div class="grid" style="flex:1;min-width:240px"><div class="k"><span>Cash</span><b id="pcash"></b></div><div class="k"><span>In stocks</span><b id="pinv"></b></div><div class="k"><span>Realised P&amp;L</span><b id="prl"></b></div></div></div>
+<div class="row"><button class="g" id="prs">Reset account</button><span class="dis">Virtual money only. Saved on this device.</span></div></div>
+<div class="card"><h2 id="phd">Live chart</h2><div class="row" style="margin:0 0 8px"><select id="prg"><option value="1d">Today (5 min)</option><option value="5d">5 days (15 min)</option></select><span class="dis" id="pst"></span></div><canvas id="pch"></canvas>
+<div class="grid" style="margin-top:10px"><div><label for="pq">Quantity</label><input type="number" id="pq" value="10" min="1"></div><div><label for="psl">Stop-loss (optional)</label><input type="number" id="psl" step="any"></div><div><label for="ptp">Target (optional)</label><input type="number" id="ptp" step="any"></div></div>
+<div class="row"><button id="pb" style="background:var(--up)">Buy</button><button id="ps" style="background:var(--dn)">Sell</button><button class="g" id="gw2">Open in Groww</button></div>
+<p class="dis" id="pm"></p><p class="dis">Fills at the latest live price with no brokerage, taxes or slippage, so real results will differ. Stop-loss and target orders are checked every 30 seconds while this page is open.</p></div>
+<div class="card"><h2>Open positions</h2><div class="sc"><table id="ppos"></table></div></div>
+<div class="card"><h2>Trade history</h2><div class="sc"><table id="phis"></table></div></div>
+</section>
+<section id="tabM" hidden><div class="card"><h2>🔑 Who can use StockLens</h2><p class="dis">Create a private invite link for each person. It stops working on its expiry date. To cut someone off earlier, add their name to REVOKED in Vercel and press Redeploy (see README).</p>
+<div class="grid"><div><label for="ivn">Friend’s name</label><input type="text" id="ivn" maxlength="20" placeholder="e.g. Ravi"></div><div><label for="ivd">Valid for</label><select id="ivd"><option value="1">1 day</option><option value="7" selected>7 days</option><option value="30">30 days</option><option value="90">90 days</option><option value="365">1 year</option></select></div></div>
+<div class="row"><button id="ivb">Create invite link</button></div><div id="ivo" style="margin-top:10px"></div></div></section>
 </main>
 <script>
 
@@ -232,10 +254,10 @@ let sgT;$('sym').addEventListener('input',()=>{clearTimeout(sgT);const q=$('sym'
 sgT=setTimeout(async()=>{try{const r=await(await fetch('/api/stock?q='+encodeURIComponent(q))).json(),b=$('sg');b.textContent='';(r.results||[]).forEach(x=>{const d=document.createElement('div');d.textContent=x.n+' · '+x.s+' · '+x.e;d.onclick=()=>{$('sym').value=x.s;b.textContent='';fetchLive()};b.appendChild(d)})}catch(e){}},300)});
 function logo(n,site){const w=$('lg');w.textContent=(n||'?').trim().slice(0,2).toUpperCase();if(!site)return;
 const d=String(site).replace(/^https?:\/\/(www\.)?/,'').split('/')[0],i=new Image();i.onload=()=>{if(i.naturalWidth>=32){w.textContent='';w.appendChild(i)}};i.style.cssText='width:100%;height:100%;object-fit:contain';i.src='https://www.google.com/s2/favicons?domain='+encodeURIComponent(d)+'&sz=128'}
-function setupQ(j,s){QS=s;CUR=j.currency||'';LIVE=null;$('sg').textContent='';$('qs').hidden=false;$('qn').textContent=j.name;
+function setupQ(j,s){QS=s;NAME=j.name;CUR=j.currency||'';LIVE=null;$('sg').textContent='';$('qs').hidden=false;$('qn').textContent=j.name;
 $('qx').textContent=s+(j.exchange?' · '+j.exchange:'')+(j.profile&&j.profile.sector?' · '+j.profile.sector:'');logo(j.name,j.profile&&j.profile.website);quote()}
 async function quote(){if(!QS||document.hidden)return;try{const j=await(await fetch('/api/stock?symbol='+encodeURIComponent(QS)+'&quote=1')).json();if(j.price!=null)showQ(j)}catch(e){}}
-function showQ(j){LIVE=j;const u=cur(CUR),pv=j.prev||j.price,d=j.price-pv,up=d>=0,age=(Date.now()/1000-j.time)/60;
+function showQ(j){LIVE=j;PX[QS]=j.price;const u=cur(CUR),pv=j.prev||j.price,d=j.price-pv,up=d>=0,age=(Date.now()/1000-j.time)/60;
 $('qp').textContent=u+fmt(j.price);$('qc').className=up?'up':'dn';$('qc').textContent=(up?'▲ ':'▼ ')+fmt(Math.abs(d))+' ('+(d/pv*100).toFixed(2)+'%)';
 $('qt').textContent=(age<20?'● Live · ':'Market closed · ')+'last trade '+new Date(j.time*1000).toLocaleString()+' · Day '+fmt(j.low)+' – '+fmt(j.high)+' · 52-week '+fmt(j.w52l)+' – '+fmt(j.w52h)}
 function planFill(){if(!PLAN||T==null)return;const f=v=>(+v).toFixed(2);$('ce').value=f(PLAN.E);$('cs').value=f(PLAN.E-2*PLAN.atr);$('ct2').value=f(PLAN.E+3*PLAN.atr);calc2()}
@@ -251,6 +273,77 @@ $('cw').textContent=w.join(' ')+(w.length?' ':'')+'Excludes brokerage, taxes and
 ['ca','ce','cs','ct2','cc'].forEach(i=>$(i).oninput=calc2);$('cp2').onclick=planFill;
 $('cn').onclick=()=>{if(!PLAN)return;const p=LIVE?LIVE.price:PLAN.P;$('ce').value=p.toFixed(2);$('cs').value=(p-2*PLAN.atr).toFixed(2);$('ct2').value=(p+3*PLAN.atr).toFixed(2);calc2()};
 setInterval(quote,30000);
+let ROLE='',NAME='',DP=null;const PX={};
+const inr=x=>'₹'+fmt(x);
+// ---- access control ----
+const CODE=()=>{try{return localStorage.getItem('sl_code')||''}catch(e){return ''}};
+(function(){try{const u=new URL(location.href),k=u.searchParams.get('k');if(k){localStorage.setItem('sl_code',k);u.searchParams.delete('k');history.replaceState(null,'',u.pathname+u.search)}}catch(e){}})();
+const _f=fetch;fetch=async(u,o={})=>{const r=await _f(u,{...o,headers:{...(o.headers||{}),'x-code':CODE()}});if(r.status===401||r.status===503)lock(r.status);return r};
+function lock(st){$('lk').hidden=false;$('lkm').textContent=st===503?'Access is not set up yet. The owner must add OWNER_CODE in Vercel (see README).':CODE()?'This code is invalid, expired or has been revoked. Ask the owner for a new one.':'Enter your access code to continue.'}
+$('lkb').onclick=()=>{try{localStorage.setItem('sl_code',$('lkc').value.trim())}catch(e){}location.reload()};
+$('lkc').onkeydown=e=>{if(e.key==='Enter')$('lkb').onclick()};
+$('sgo').onclick=()=>{try{localStorage.removeItem('sl_code')}catch(e){}location.reload()};
+(async()=>{try{const r=await fetch('/api/auth');if(r.ok){const j=await r.json();ROLE=j.role;$('lk').hidden=true;if(ROLE==='owner')$('tbM').hidden=false}else if(r.status!==401&&r.status!==503)$('lkm').textContent='Could not reach the server. Check your internet connection.'}catch(e){$('lkm').textContent='Could not reach the server. Check your internet connection.'}})();
+$('ivb').onclick=async()=>{const o=$('ivo');try{const r=await fetch('/api/auth?action=invite&name='+encodeURIComponent($('ivn').value.trim())+'&days='+$('ivd').value),j=await r.json();if(!r.ok)throw new Error(j.error||'Failed');
+const link=location.origin+'/?k='+encodeURIComponent(j.code),p=document.createElement('p'),c=document.createElement('code'),a=document.createElement('a');o.textContent='';
+p.textContent='Invite for '+j.name+' (valid until '+new Date(j.expires*1000).toLocaleDateString()+'): ';c.textContent=link;p.appendChild(c);
+a.href='https://wa.me/?text='+encodeURIComponent('Your StockLens access link: '+link);a.target='_blank';a.rel='noopener';a.textContent='  Share on WhatsApp';p.appendChild(a);o.appendChild(p)}catch(e){o.textContent='⚠ '+e.message}};
+// ---- theme, install, tabs ----
+function theme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('sl_theme',t)}catch(e){}$('thm').textContent=t==='dark'?'☀️':'🌙';if(D.length)draw();if(QS)pchart()}
+(function(){let t;try{t=localStorage.getItem('sl_theme')}catch(e){}theme(t||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'))})();
+$('thm').onclick=()=>theme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();DP=e;$('ins').hidden=false});
+$('ins').onclick=()=>{if(DP){DP.prompt();DP=null;$('ins').hidden=true}};
+if(/iphone|ipad/i.test(navigator.userAgent||'')&&!matchMedia('(display-mode: standalone)').matches){$('ins').hidden=false;$('ins').onclick=()=>alert('On iPhone: tap the Share button, then “Add to Home Screen”.')}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+function tab(n){['A','P','M'].forEach(k=>{$('tab'+k).hidden=k!==n;$('tb'+k).className=k===n?'on':''});if(n==='P'){prender();pchart();ptick()}}
+['A','P','M'].forEach(k=>$('tb'+k).onclick=()=>tab(k));
+// ---- paper trading ----
+let PP;try{PP=JSON.parse(localStorage.getItem('sl_paper'))}catch(e){}
+if(!PP||!PP.pos)PP={cash:1e6,start:1e6,real:0,pos:{},hist:[]};
+const psave=()=>{try{localStorage.setItem('sl_paper',JSON.stringify(PP))}catch(e){}},pmsg=t=>$('pm').textContent=t;
+function pclose(s,q,p,tag){const o=PP.pos[s],pl=(p-o.avg)*q;PP.cash+=q*p;PP.real+=pl;o.q-=q;PP.hist.unshift({t:Date.now(),s,side:tag,q,p,pl});if(o.q<=0)delete PP.pos[s];PP.hist=PP.hist.slice(0,100)}
+function trade(side){const s=QS,p=PX[s],q=Math.floor(+$('pq').value),o=PP.pos[s];
+if(!s||!p)return pmsg('Search a stock at the top and wait for its live price first.');
+if(CUR!=='INR')return pmsg('Paper trading currently supports Indian (INR) stocks only.');
+if(!(q>=1))return pmsg('Enter a quantity of 1 or more.');
+if(side==='B'){const cost=q*p,sl=+$('psl').value||0,tp=+$('ptp').value||0;
+if(cost>PP.cash)return pmsg('Not enough virtual cash. You can afford '+Math.floor(PP.cash/p)+' shares.');
+if(sl&&sl>=p)return pmsg('Stop-loss must be below the buy price.');if(tp&&tp<=p)return pmsg('Target must be above the buy price.');
+PP.cash-=cost;if(o){o.avg=(o.avg*o.q+cost)/(o.q+q);o.q+=q;if(sl)o.sl=sl;if(tp)o.tp=tp}else PP.pos[s]={q,avg:p,sl,tp,name:NAME};PP.hist.unshift({t:Date.now(),s,side:'BUY',q,p})}
+else{if(!o||o.q<q)return pmsg('You hold '+(o?o.q:0)+' shares of this stock.');pclose(s,q,p,'SELL')}
+psave();pmsg((side==='B'?'Bought ':'Sold ')+q+' × '+s+' at '+inr(p)+' (practice money)');prender()}
+async function ptick(){if(document.hidden)return;const syms=new Set(Object.keys(PP.pos));if(QS)syms.add(QS);
+for(const s of syms){try{const j=await(await fetch('/api/stock?symbol='+encodeURIComponent(s)+'&quote=1')).json();if(j.price==null)continue;PX[s]=j.price;const o=PP.pos[s];
+if(o){if(o.sl&&j.price<=o.sl)pclose(s,o.q,j.price,'STOP-LOSS');else if(o.tp&&j.price>=o.tp)pclose(s,o.q,j.price,'TARGET')}}catch(e){}}
+psave();if(!$('tabP').hidden){prender();pchart()}}
+function prender(){let mv=0;const rows=Object.entries(PP.pos).map(([s,o])=>{const p=PX[s]??o.avg,pl=(p-o.avg)*o.q;mv+=o.q*p;
+return'<tr><td>'+esc(o.name||s)+'<br><span class="dis">'+esc(s)+'</span></td><td>'+o.q+'</td><td>'+fmt(o.avg)+'</td><td>'+fmt(p)+'</td><td class="'+(pl>=0?'up':'dn')+'">'+(pl>=0?'+':'−')+fmt(Math.abs(pl))+' ('+((p/o.avg-1)*100).toFixed(1)+'%)</td><td>'+(o.sl?fmt(o.sl):'–')+' / '+(o.tp?fmt(o.tp):'–')+'</td><td><button class="g" data-c="'+esc(s)+'">Sell all</button></td></tr>'});
+const eq=PP.cash+mv,pl=eq-PP.start;$('pv').textContent=inr(eq);$('pp').className=pl>=0?'up':'dn';$('pp').textContent=(pl>=0?'+':'−')+inr(Math.abs(pl))+' ('+(pl/PP.start*100).toFixed(2)+'%) since you started';
+$('pcash').textContent=inr(PP.cash);$('pinv').textContent=inr(mv);$('prl').textContent=(PP.real>=0?'+':'−')+inr(Math.abs(PP.real));$('prl').className=PP.real>=0?'up':'dn';
+$('ppos').innerHTML=rows.length?'<tr><th>Stock</th><th>Qty</th><th>Avg</th><th>Now</th><th>P&amp;L</th><th>SL / Target</th><th></th></tr>'+rows.join(''):'<tr><td class="dis">No open positions yet. Search a stock at the top, then press Buy.</td></tr>';
+$('phis').innerHTML=PP.hist.length?'<tr><th>Time</th><th>Action</th><th>Stock</th><th>Qty</th><th>Price</th><th>P&amp;L</th></tr>'+PP.hist.slice(0,25).map(h=>'<tr><td>'+new Date(h.t).toLocaleString()+'</td><td>'+h.side+'</td><td>'+esc(h.s)+'</td><td>'+h.q+'</td><td>'+fmt(h.p)+'</td><td class="'+(h.pl>0?'up':h.pl<0?'dn':'')+'">'+(h.pl==null?'–':(h.pl>=0?'+':'−')+fmt(Math.abs(h.pl)))+'</td></tr>').join(''):'<tr><td class="dis">No trades yet.</td></tr>';
+$('phd').textContent=QS?(NAME||QS)+' · live chart':'Live chart (search a stock at the top first)'}
+$('ppos').onclick=e=>{const s=e.target.dataset&&e.target.dataset.c;if(s&&PP.pos[s]){pclose(s,PP.pos[s].q,PX[s]??PP.pos[s].avg,'SELL');psave();prender()}};
+$('pb').onclick=()=>trade('B');$('ps').onclick=()=>trade('S');$('prg').onchange=pchart;
+$('prs').onclick=()=>{if(confirm('Reset to ₹10,00,000 practice money? All positions and history will be erased.')){PP={cash:1e6,start:1e6,real:0,pos:{},hist:[]};psave();prender()}};
+async function pchart(){if(!QS||$('tabP').hidden)return;const rg=$('prg').value;try{const j=await(await fetch('/api/stock?symbol='+encodeURIComponent(QS)+'&intraday=1&r='+rg)).json();pdraw(j.rows,j.prev,rg);$('pst').textContent=j.rows&&j.rows.length?'Updated '+new Date().toLocaleTimeString()+' · refreshes every 30 seconds':''}catch(e){pdraw([],0,rg)}}
+function pdraw(rows,prev,rg){const[x,w,h]=setup($('pch'),260),mut=css('--mut'),bd=css('--bd');
+if(!rows||rows.length<2){x.fillStyle=mut;x.fillText('No intraday data yet (the market may be closed).',10,30);return}
+const pl=6,pr=58,pt=8,pb=20,c=rows.map(r=>r.c),base=prev||c[0];let lo=Math.min(...c,base),hi=Math.max(...c,base);const pd=(hi-lo)*.08||1;lo-=pd;hi+=pd;
+const X=i=>pl+i/(c.length-1)*(w-pl-pr),Y=v=>pt+(hi-v)/(hi-lo)*(h-pt-pb),col=c[c.length-1]>=base?css('--up'):css('--dn');
+x.strokeStyle=bd;x.fillStyle=mut;x.textAlign='left';for(let g=0;g<=4;g++){const v=lo+(hi-lo)*g/4,y=Y(v);x.beginPath();x.moveTo(pl,y);x.lineTo(w-pr,y);x.stroke();x.fillText(fmt(v),w-pr+4,y+4)}
+x.setLineDash([5,4]);x.strokeStyle=mut;x.beginPath();x.moveTo(pl,Y(base));x.lineTo(w-pr,Y(base));x.stroke();x.setLineDash([]);
+x.beginPath();c.forEach((v,i)=>i?x.lineTo(X(i),Y(v)):x.moveTo(X(i),Y(v)));x.strokeStyle=col;x.lineWidth=1.8;x.stroke();
+x.lineTo(X(c.length-1),h-pb);x.lineTo(X(0),h-pb);x.fillStyle=col+'22';x.fill();x.fillStyle=col;x.fillText(fmt(c[c.length-1]),w-pr+4,Y(c[c.length-1])+4);
+x.fillStyle=mut;x.textAlign='center';[0,Math.floor(c.length/2),c.length-1].forEach(i=>{const d=new Date(rows[i].t*1000);x.fillText(rg==='5d'?d.toLocaleDateString([],{day:'numeric',month:'short'}):d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),Math.min(Math.max(X(i),24),w-pr-20),h-5)})}
+setInterval(ptick,30000);
+// ---- Groww hand-off (manual order only) ----
+function groww(){const s=QS||$('sym').value.trim().toUpperCase();if(!s)return;const b=s.replace(/\.(NS|BO)$/,''),e=+$('ce').value||0,
+t=(NAME||b)+' ('+s+') | Buy '+e+' | Stop-loss '+$('cs').value+' | Target '+$('ct2').value+' | Qty '+(e?Math.floor((+$('ca').value||0)/e):0);
+try{navigator.clipboard.writeText(t)}catch(x){}window.open('https://groww.in/search?q='+encodeURIComponent(b),'_blank','noopener');
+const m='Order details copied. Groww opens in a new tab: place and confirm the order there yourself. StockLens never trades with your real account.';$('cw').textContent=m;pmsg(m)}
+$('gw1').onclick=groww;$('gw2').onclick=groww;
 const q0=new URLSearchParams(location.search).get('s');if(q0){$('sym').value=q0;fetchLive()}
 
 </script></body></html>

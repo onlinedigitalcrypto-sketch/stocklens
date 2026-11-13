@@ -1,12 +1,24 @@
-# StockLens: put it online in about 5 minutes (free)
+# StockLens setup (free)
 
-1. Create a free account at github.com, press **New repository**, then **uploading an existing file** and upload `index.html` and the `api` folder (keep `api/stock.js` inside the folder). Commit.
-2. Go to vercel.com, sign in with GitHub, press **Add New → Project**, pick that repository and press **Deploy** (no settings needed).
-3. Vercel gives you a link such as `https://yourname-stocklens.vercel.app`. Share it with your friend.
-   Direct links work too: `https://yourname-stocklens.vercel.app/?s=TCS.NS`
+## 1. Files to upload to GitHub (repository root)
+index.html, manifest.json, sw.js, icon-192.png, icon-512.png, README.md and the folder `api` containing
+`stock.js`, `auth.js`, `_auth.js`. (Vercel redeploys automatically after each commit.)
 
-Symbols: NSE `TCS.NS`, BSE `TCS.BO`, US `AAPL`.
+## 2. Make it private (required)
+In Vercel: your project, Settings, Environment Variables. Add:
+- `OWNER_CODE`   your own private passcode (long and hard to guess, e.g. 16+ characters). Gives full access.
+- `ACCESS_SECRET` any long random text. Used to sign friend invites.
+- `REVOKED`      (optional) comma-separated friend names to block immediately, e.g. `Ravi,Sam`.
+Then Deployments, the latest one, Redeploy. Until OWNER_CODE exists the app stays locked on purpose.
 
-Notes
-- Prices, fundamentals and headlines come from Yahoo Finance and Google News public endpoints (no key). They are unofficial, so fundamentals can occasionally be blank; fill them under *Advanced*.
-- Opening `index.html` directly from your phone/PC will not fetch live data: it needs the `api` function running on Vercel.
+## 3. Inviting a friend
+Open the app, unlock with your OWNER_CODE, go to the Access tab, type the friend's name, choose how long the
+invite lasts and press Create invite link. Send the link (WhatsApp button included). It stops working on its
+expiry date. To remove someone early: add their name to REVOKED and Redeploy.
+
+## 4. Install on your phone
+Open your link in Chrome (Android) and tap "Install app", or in Safari (iPhone) tap Share, then Add to Home Screen.
+
+## Notes
+- Paper-trading data is stored in each person's own browser.
+- Groww: the "Open in Groww" button only copies your order details and opens Groww. You place orders yourself.
